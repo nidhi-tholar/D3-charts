@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+</head>
+<body>
+    <script>
+      USData = [
+  { type: 'Poultry', value: 48.9954 },
+  { type: 'Beef', value: 25.9887 },
+  { type: 'Pig', value: 22.9373 },
+  { type: 'Sheep', value: 0.4869 }
+]
+
+let height = 500;
+let width = 900;
+
+var svg = d3.select('body').append('svg').attr('width',width ).attr('height', height);
+const colors = [ '#976393', '#685489', '#43457f', '#ff9b83' ]
+
+let colorScale =  d3.scaleOrdinal( USData.map(d => d.type), colors );
+
+let arc = d3.arc().innerRadius(0.5 * height/2).outerRadius(0.85 * height/2)
+let label_arc = d3.arc().innerRadius(0.95 * height/2).outerRadius(0.95 * height/2)
+
+let pie = d3.pie().value(d => d.value);
+let pie_Arcs = pie(USData);
+
+console.log(arc);
+console.log(label_arc);
+console.log(pie_Arcs)
+svg.append('g').attr('class', 'donut-container')
+    .attr('transform', `translate(${ width / 2 },${ height / 2 })`)
+    .selectAll('path')
+    .data(pie_Arcs)
+    .join('path')
+    .style('stroke', 'white')
+      .style('stroke-width', 2)
+      .style('fill', d => colorScale( d.data.type ))
+      .attr('d', arc)
+
+      const text = svg.append('g')
+      .attr('class', 'labels-container')
+      .attr('transform', `translate(${ width / 2 },${ height / 2 })`)
+    .selectAll('text')
+    // We use the data arcs so we have access to the label data
+    .data( pie_Arcs )
+    .join('text')
+    .attr('transform', d => `translate(${ label_arc.centroid(d) })`)
+      .attr('text-anchor', 'middle')
+
+      text.selectAll('tspan')
+    // 1
+    .data( d => [ 
+      d.data.type, 
+      d.data.value.toFixed(1) + ' kg' 
+    ])
+    // 2
+    .join('tspan')
+      .attr('x', 0)
+      .style('font-family', 'sans-serif')
+      .style('font-size', 12)
+      .style('font-weight', (d,i) => i ? undefined : 'bold')
+      .style('fill', '#222') 
+    //3
+      .attr('dy', (d,i) => i ? '1.2em' : 0 )
+      .text(d => d)
+
+    </script>
+</body>
+</html>
